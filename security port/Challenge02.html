@@ -1,0 +1,647 @@
+```python
+import weasyprint
+
+html_content = """<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guía de Configuración - Solución Topología Packet Tracer</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 12mm;
+            background-color: #f8fafc;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            font-size: 10pt;
+            line-height: 1.5;
+            background-color: #f8fafc;
+        }
+
+        /* Top Header */
+        .header {
+            background-color: #0f172a;
+            color: #ffffff;
+            margin: -15mm -12mm 20px -12mm;
+            padding: 25px 20mm;
+            border-bottom: 4px solid #2563eb;
+        }
+
+        .header h1 {
+            margin: 0 0 6px 0;
+            font-size: 18pt;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            margin: 0;
+            font-size: 11pt;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .badge-container {
+            margin-top: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: #1e293b;
+            color: #38bdf8;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            border: 1px solid #334155;
+            margin-right: 6px;
+        }
+
+        /* Section Headings */
+        h2 {
+            font-size: 13pt;
+            color: #0f172a;
+            margin: 20px 0 10px 0;
+            padding-left: 10px;
+            border-left: 4px solid #2563eb;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 11pt;
+            color: #1e3a8a;
+            margin: 14px 0 6px 0;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin: 0 0 8px 0;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: #0f172a;
+            color: #f1f5f9;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 8.5pt;
+            line-height: 1.4;
+            margin: 6px 0 14px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #334155;
+        }
+
+        .comment {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .cmd {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 16px 0;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #1e293b;
+            color: #ffffff;
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 8px 10px;
+            font-size: 9pt;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Callout Box */
+        .callout {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 12px;
+            margin: 12px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 9.5pt;
+            color: #1e40af;
+        }
+
+        .callout-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        /* Steps list */
+        ol, ul {
+            margin: 0 0 12px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .footer {
+            margin-top: 25px;
+            padding-top: 10px;
+            border-top: 1px solid #cbd5e1;
+            font-size: 8pt;
+            color: #64748b;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Guía Completa de Configuración en Cisco Packet Tracer</h1>
+        <p class="subtitle">Solución Técnica de Seguridad de Puerto (Port Security) y Enrutamiento Dinámico RIPv2</p>
+        <div class="badge-container">
+            <span class="badge">Topología Multisede</span>
+            <span class="badge">Cisco IOS Commands</span>
+            <span class="badge">CCNA Security & Routing</span>
+        </div>
+    </div>
+
+    <h2>1. Resumen de Requerimientos y Estrategia Técnica</h2>
+    <p>Esta guía detalla los comandos específicos en Cisco IOS para resolver los 7 requerimientos de seguridad en switches y la interconexión mediante RIPv2 en la topología dada.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Punto</th>
+                <th>Requerimiento</th>
+                <th>Mecanismo de Solución en Cisco IOS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1</strong></td>
+                <td>Restricción de equipos externos en Switches</td>
+                <td><code>switchport port-security</code> + <code>maximum 1</code> + <code>mac-address sticky</code></td>
+            </tr>
+            <tr>
+                <td><strong>2</strong></td>
+                <td>Protección del puerto Servidor DNS (Cúcuta)</td>
+                <td>Port Security estático/sticky en Fa0/2 de Switch21 con <code>violation shutdown</code></td>
+            </tr>
+            <tr>
+                <td><strong>3</strong></td>
+                <td>Intercambio de equipos de Gerencia</td>
+                <td>Permitir múltiple aprendizaje MAC (<code>maximum 2</code>) o puertos de acceso flexibles</td>
+            </tr>
+            <tr>
+                <td><strong>4</strong></td>
+                <td>Restricción estricta en equipos de Secretaría</td>
+                <td>Port Security bloqueado a 1 MAC específica. Bloqueo inmediato en caso de cambio</td>
+            </tr>
+            <tr>
+                <td><strong>5</strong></td>
+                <td>Acceso del equipo CCTV en Fa0/24 de cualquier Switch</td>
+                <td>Autorización explícita de la MAC del CCTV en la interfaz Fa0/24 de los switches</td>
+            </tr>
+            <tr>
+                <td><strong>6</strong></td>
+                <td>Portátil IT con acceso universal</td>
+                <td>Registro de la MAC del Portátil IT en el listado permitido o puertos administrativos</td>
+            </tr>
+            <tr>
+                <td><strong>7</strong></td>
+                <td>Sede Cali (Contaduría, Tesorería y bloqueo de externos)</td>
+                <td>Seguridad Sticky en Switch22(2) para usuarios locales; denegación a externos</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Configuración de Seguridad de Puertos (Port Security)</h2>
+
+    <h3>Punto 1 y 4: Protección General y Secretaría (Bogotá / Cúcuta)</h3>
+    <p>Aplica para las interfaces de acceso estándar conectadas a PCs finales para prevenir conexiones no autorizadas.</p>
+    <pre><span class="comment">! Ingresar a la interfaz o rango de interfaces de acceso</span>
+<span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface range FastEthernet 0/1 - 23</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 1</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Punto 2: Protección del Servidor DNS (Switch21 - Cúcuta)</h3>
+    <p>El puerto conectado al servidor DNS se apaga inmediatamente ante cualquier intento de conexión ajena.</p>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface FastEthernet 0/2</span>   <span class="comment">! Ajustar a la interfaz exacta del ServerDNS</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 1</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Punto 3: Equipos de Gerencia (Bogotá)</h3>
+    <p>Para permitir el intercambio entre las sedes de Bogotá sin caer la interfaz, permitimos hasta 2 direcciones MAC registradas.</p>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface range FastEthernet 0/1 - 2</span>   <span class="comment">! Interfaces conectadas a Gerencia</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 2</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation restrict</span>   <span class="comment">! Notifica sin apagar la interfaz</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Punto 5: Configuración del Puerto CCTV (Fa0/24) en Todos los Switches</h3>
+    <p>Permite conectar la cámara CCTV en cualquier puerto Fa0/24 asignando estáticamente su dirección MAC.</p>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface FastEthernet 0/24</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security mac-address &lt;MAC_DEL_CCTV&gt;</span>   <span class="comment">! Ej: 0001.C4A1.B2C3</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Puntos 6 y 7: Portátil IT y Sede Cali</h3>
+    <p>En el switch de Cali (Switch22(2)), registramos los equipos autorizados de Contaduría y Tesorería mediante <code>sticky</code>.</p>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface range FastEthernet 0/1 - 2</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 1</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h2>3. Configuración de Enrutamiento Dinámico RIPv2</h2>
+
+    <p>Para interconectar las 3 sedes (Bogotá, Cali y Cúcuta), habilitamos RIP versión 2 y desactivamos el sumarizado automático en los 3 routers.</p>
+
+    <h3>Router Bogotá (Router5)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">router rip</span>
+ <span class="cmd">version 2</span>
+ <span class="cmd">no auto-summary</span>
+ <span class="cmd">network &lt;RED_LAN_BOGOTA&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_BOGOTA_CALI&gt;</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Router Cali (Router6)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">router rip</span>
+ <span class="cmd">version 2</span>
+ <span class="cmd">no auto-summary</span>
+ <span class="cmd">network &lt;RED_LAN_CALI&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_CALI_BOGOTA&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_CALI_CUCUTA&gt;</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Router Cúcuta (Router5(1))</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">router rip</span>
+ <span class="cmd">version 2</span>
+ <span class="cmd">no auto-summary</span>
+ <span class="cmd">network &lt;RED_LAN_CUCUTA&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_CUCUTA_CALI&gt;</span>
+<span class="cmd">exit</span></pre>
+
+    <h2>4. Comandos de Verificación y Diagnóstico</h2>
+
+    <div class="callout">
+        <div class="callout-title">Tip de Verificación en Packet Tracer:</div>
+        Ejecuta estos comandos en el CLI para validar que las políticas de seguridad y la tabla de enrutamiento estén operando correctamente.
+    </div>
+
+    <ul>
+        <li><code>show port-security</code>: Muestra el estado global de seguridad de puerto en el switch.</li>
+        <li><code>show port-security interface FastEthernet 0/1</code>: Muestra detalles de violaciones, contador de direcciones MAC y estado de la interfaz.</li>
+        <li><code>show port-security address</code>: Muestra la lista de direcciones MAC aprendidas dinámicamente (sticky) o configuradas estáticamente.</li>
+        <li><code>show ip route rip</code>: Muestra las rutas aprendidas en los routers a través del protocolo RIPv2.</li>
+    </ul>
+
+    <div class="footer">
+        Documento generado para la solución técnica de la tarea de Packet Tracer.
+    </div>
+
+</body>
+</html>
+"""
+
+with open('guia_configuracion_packet_tracer.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+# Convert to PDF
+weasyprint.HTML('guia_configuracion_packet_tracer.html').write_pdf('guia_configuracion_packet_tracer.pdf')
+print("Files generated successfully.")
+
+
+```
+
+```text
+Files generated successfully.
+
+
+```
+
+Your PDF file is ready
+
+
+Your HTML file is ready
+
+
+---
+
+### Código HTML de la Guía de Configuración
+
+A continuación tienes el código HTML con todos los comandos e instrucciones organizados para tu consulta directa:
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guía de Configuración - Solución Topología Packet Tracer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f8fafc;
+        }
+
+        .header {
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            border-bottom: 4px solid #2563eb;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #94a3b8;
+        }
+
+        h2 {
+            color: #0f172a;
+            border-left: 4px solid #2563eb;
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+
+        h3 {
+            color: #1e3a8a;
+        }
+
+        pre {
+            background-color: #0f172a;
+            color: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+
+        .comment {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .cmd {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: #ffffff;
+        }
+
+        th {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .callout {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Guía de Configuración en Cisco Packet Tracer</h1>
+        <p>Solución de Seguridad de Puerto (Port Security) y Enrutamiento RIPv2</p>
+    </div>
+
+    <h2>1. Resumen de Requerimientos y Estrategia</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Punto</th>
+                <th>Requerimiento</th>
+                <th>Mecanismo en Cisco IOS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1</strong></td>
+                <td>Restricción de equipos externos en Switches</td>
+                <td><code>switchport port-security</code> + <code>maximum 1</code> + <code>mac-address sticky</code></td>
+            </tr>
+            <tr>
+                <td><strong>2</strong></td>
+                <td>Protección del puerto Servidor DNS (Cúcuta)</td>
+                <td>Port Security en Fa0/2 de Switch21 con <code>violation shutdown</code></td>
+            </tr>
+            <tr>
+                <td><strong>3</strong></td>
+                <td>Intercambio de equipos de Gerencia</td>
+                <td>Permitir múltiple aprendizaje MAC (<code>maximum 2</code>) o puertos de acceso flexibles</td>
+            </tr>
+            <tr>
+                <td><strong>4</strong></td>
+                <td>Restricción en equipos de Secretaría</td>
+                <td>Port Security con 1 MAC permitida y caída inmediata en cambio (<code>shutdown</code>)</td>
+            </tr>
+            <tr>
+                <td><strong>5</strong></td>
+                <td>Equipo CCTV en Fa0/24 de cualquier Switch</td>
+                <td>Autorización de la MAC del CCTV en la interfaz Fa0/24 de los switches</td>
+            </tr>
+            <tr>
+                <td><strong>6</strong></td>
+                <td>Portátil IT con acceso universal</td>
+                <td>Registro de la MAC del Portátil IT en el listado permitido o puertos de administración</td>
+            </tr>
+            <tr>
+                <td><strong>7</strong></td>
+                <td>Sede Cali (Contaduría, Tesorería y denegación a externos)</td>
+                <td>Seguridad Sticky en Switch22(2) para usuarios locales</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Configuración de Seguridad de Puertos (Port Security)</h2>
+
+    <h3>Puntos 1 y 4: Protección General y Secretaría (Bogotá / Cúcuta)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface range FastEthernet 0/1 - 23</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 1</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Punto 2: Proteción del Servidor DNS (Switch21 - Cúcuta)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface FastEthernet 0/2</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 1</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Punto 3: Equipos de Gerencia (Bogotá)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface range FastEthernet 0/1 - 2</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 2</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation restrict</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Punto 5: Configuración del Puerto CCTV (Fa0/24)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface FastEthernet 0/24</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security mac-address &lt;MAC_DEL_CCTV&gt;</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Puntos 6 y 7: Sede Cali</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">interface range FastEthernet 0/1 - 2</span>
+ <span class="cmd">switchport mode access</span>
+ <span class="cmd">switchport port-security</span>
+ <span class="cmd">switchport port-security maximum 1</span>
+ <span class="cmd">switchport port-security mac-address sticky</span>
+ <span class="cmd">switchport port-security violation shutdown</span>
+<span class="cmd">exit</span></pre>
+
+    <h2>3. Enrutamiento RIPv2</h2>
+
+    <h3>Router Bogotá (Router5)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">router rip</span>
+ <span class="cmd">version 2</span>
+ <span class="cmd">no auto-summary</span>
+ <span class="cmd">network &lt;RED_LAN_BOGOTA&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_BOGOTA_CALI&gt;</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Router Cali (Router6)</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">router rip</span>
+ <span class="cmd">version 2</span>
+ <span class="cmd">no auto-summary</span>
+ <span class="cmd">network &lt;RED_LAN_CALI&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_CALI_BOGOTA&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_CALI_CUCUTA&gt;</span>
+<span class="cmd">exit</span></pre>
+
+    <h3>Router Cúcuta (Router5(1))</h3>
+    <pre><span class="cmd">enable</span>
+<span class="cmd">configure terminal</span>
+<span class="cmd">router rip</span>
+ <span class="cmd">version 2</span>
+ <span class="cmd">no auto-summary</span>
+ <span class="cmd">network &lt;RED_LAN_CUCUTA&gt;</span>
+ <span class="cmd">network &lt;RED_SERIAL_CUCUTA_CALI&gt;</span>
+<span class="cmd">exit</span></pre>
+
+    <h2>4. Comandos de Verificación</h2>
+    <div class="callout">
+        <strong>Comandos clave para diagnóstico en el CLI:</strong>
+        <ul>
+            <li><code>show port-security</code></li>
+            <li><code>show port-security interface FastEthernet 0/1</code></li>
+            <li><code>show port-security address</code></li>
+            <li><code>show ip route rip</code></li>
+        </ul>
+    </div>
+
+</body>
+</html>
+
+```

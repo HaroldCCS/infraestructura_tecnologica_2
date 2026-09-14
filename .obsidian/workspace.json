@@ -1,0 +1,241 @@
+{
+  "main": {
+    "id": "a7b34ed9fe82377c",
+    "type": "split",
+    "children": [
+      {
+        "id": "a7d934dcb658b98a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "84d8326ff5dcd1b1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Frame Relay y NAT/Guía paso a paso - Frame Relay y NAT.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Guía paso a paso - Frame Relay y NAT"
+            }
+          },
+          {
+            "id": "ef72264fec9dedb7",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "Frame Relay y NAT/indicaciones actividad/Captura de pantalla 2026-09-11 a la(s) 9.48.24 a.m..png"
+              },
+              "icon": "lucide-image",
+              "title": "Captura de pantalla 2026-09-11 a la(s) 9.48.24 a.m."
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "f090445cfa77144a",
+    "type": "split",
+    "children": [
+      {
+        "id": "6fa7e4b7d6c83d1a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4a3e38afd6205bea",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de archivos"
+            }
+          },
+          {
+            "id": "d0d977a27a7f7138",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Buscar"
+            }
+          },
+          {
+            "id": "b7b6e75e6ebc4ebc",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 325.3359375,
+    "collapsed": true
+  },
+  "right": {
+    "id": "0e89973d94733b7b",
+    "type": "split",
+    "children": [
+      {
+        "id": "9e58671e1694c7ea",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9b2df13087aa0255",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "trunk/Guía paso a paso - VLAN Trunking.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Enlaces entrantes"
+            }
+          },
+          {
+            "id": "4471e54dc519ba5b",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "trunk/Guía paso a paso - VLAN Trunking.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Enlaces salientes"
+            }
+          },
+          {
+            "id": "3d8d60a91eb8eeae",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "655852d46937d548",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas las propiedades"
+            }
+          },
+          {
+            "id": "ec685b9667a11779",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "trunk/Guía paso a paso - VLAN Trunking.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Esquema"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false
+    }
+  },
+  "active": "84d8326ff5dcd1b1",
+  "lastOpenFiles": [
+    "Frame Relay y NAT/PlantillaNubes821.pka~",
+    "Frame Relay y NAT/indicaciones actividad/Captura de pantalla 2026-09-11 a la(s) 9.48.24 a.m..png",
+    "Frame Relay y NAT/indicaciones actividad/FrameRelay-NAT.md",
+    "Frame Relay y NAT/Guía paso a paso - Frame Relay y NAT.md",
+    "Frame Relay y NAT/FrameRelay-NAT.md",
+    "Frame Relay y NAT/indicaciones actividad",
+    "Frame Relay y NAT/carpeta sin título",
+    "Frame Relay y NAT/Captura de pantalla 2026-09-11 a la(s) 9.48.24 a.m..png",
+    "Frame Relay y NAT/FrameRelay-NAT.pdf",
+    "Frame Relay y NAT/PlantillaNubes821.pka",
+    "Frame Relay y NAT",
+    "carpeta sin título",
+    "challenge/Infra y Comandos.md",
+    "challenge/PlantillaNubes821.pka~",
+    "challenge/z_servidores.png",
+    "challenge/z_centro.png",
+    "challenge/arquitectura_challenge.png",
+    "Configuración de redes VLAN y enlaces troncales/Infra y Comandos.md",
+    "Configuración de redes VLAN y enlaces troncales/Respuestas.md",
+    "Configuración de redes VLAN y enlaces troncales/PlantillaNubes821.pka~",
+    "Configuración de redes VLAN y enlaces troncales/Guía paso a paso - VLAN y Enlaces Troncales.md",
+    "Configuración de redes VLAN y enlaces troncales/Captura de pantalla 2026-09-01 a la(s) 10.33.12 p.m..png",
+    "Configuración de redes VLAN y enlaces troncales/_to_delete/vlan_topology_zoom.png",
+    "Configuración de redes VLAN y enlaces troncales/_to_delete/vlan_servercmds2.png",
+    "Configuración de redes VLAN y enlaces troncales/_to_delete/vlan_servercmds.png",
+    "Configuración de redes VLAN y enlaces troncales/_to_delete/vlan_rightcmd_zoom.png",
+    "Configuración de redes VLAN y enlaces troncales/_to_delete",
+    "security port/Guía paso a paso - Port Security y RIPv2.md",
+    "Sin título.md",
+    "trunk/Guía paso a paso - VLAN Trunking.md",
+    "trunk/comandos ejecutados/comandos router.md",
+    "trunk/comandos ejecutados/comandos switch.md",
+    "00 - Contexto del Vault.md",
+    "Bienvenido.md"
+  ]
+}

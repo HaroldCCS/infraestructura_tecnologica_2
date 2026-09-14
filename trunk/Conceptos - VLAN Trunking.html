@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Qué estoy haciendo? — VLANs y Trunking explicado</title>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#111834; --card:#151d3b; --card2:#1b2549;
+  --line:#2a3766; --txt:#e8ecf8; --dim:#9aa6cc; --dim2:#6b779e;
+  --v1:#a78bfa;  /* VLAN 1  violeta */
+  --v10:#22d3ee; /* VLAN 10 cian    */
+  --v20:#fbbf24; /* VLAN 20 ámbar   */
+  --ok:#34d399; --bad:#fb7185;
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:radial-gradient(1200px 700px at 15% -10%,#1c2a5e 0%,transparent 55%),
+             radial-gradient(1000px 600px at 90% 5%,#2a1b4d 0%,transparent 50%),
+             var(--bg);
+  color:var(--txt); font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  line-height:1.65; overflow-x:hidden;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+
+/* ---------- NAV ---------- */
+nav{position:sticky;top:0;z-index:100;background:rgba(11,16,32,.82);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:6px;overflow-x:auto;padding:10px 20px;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav a{color:var(--dim);text-decoration:none;font-size:.8rem;font-weight:600;
+  padding:7px 13px;border-radius:99px;white-space:nowrap;transition:.25s;border:1px solid transparent}
+nav a:hover{color:var(--txt);background:var(--card2)}
+nav a.on{color:#0b1020;background:linear-gradient(135deg,var(--v10),#60a5fa);border-color:transparent}
+
+/* ---------- HERO ---------- */
+header{padding:80px 0 60px;text-align:center;position:relative}
+.kicker{display:inline-block;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--v10);border:1px solid var(--line);padding:6px 16px;border-radius:99px;margin-bottom:22px;
+  background:rgba(34,211,238,.06)}
+h1{font-size:clamp(2rem,5.5vw,3.4rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:18px;font-weight:800}
+h1 .g{background:linear-gradient(120deg,var(--v10),#818cf8 55%,var(--v20));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:1.1rem;color:var(--dim);max-width:640px;margin:0 auto}
+
+/* ---------- SECTIONS ---------- */
+section{padding:56px 0;border-top:1px solid rgba(42,55,102,.5);scroll-margin-top:64px}
+.bcpc{cursor:pointer}
+.bcpc text{pointer-events:none;user-select:none}
+.bcpc rect{transition:stroke-width .2s}
+.bcpc:hover rect{stroke-width:3.5}
+.num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:9px;background:linear-gradient(135deg,var(--v10),#60a5fa);color:#0b1020;
+  font-weight:800;font-size:.85rem;margin-right:12px;flex-shrink:0}
+h2{font-size:clamp(1.4rem,3.5vw,2rem);display:flex;align-items:center;margin-bottom:10px;
+  letter-spacing:-.01em;font-weight:700}
+h3{font-size:1.1rem;margin:26px 0 10px;color:var(--txt);font-weight:700}
+p{color:var(--dim);margin-bottom:14px}
+p strong,li strong{color:var(--txt)}
+.lead{font-size:1.05rem;color:#c3cbe8;margin-bottom:22px}
+ul,ol{color:var(--dim);margin:0 0 16px 20px}
+li{margin-bottom:8px}
+
+/* ---------- CARDS ---------- */
+.card{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);
+  border-radius:var(--r);padding:24px;margin:20px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.note{border-left:3px solid var(--v20);background:rgba(251,191,36,.07);padding:14px 18px;
+  border-radius:0 12px 12px 0;margin:18px 0;font-size:.94rem;color:#e0d5b8}
+.note b{color:var(--v20)}
+.win{border-left:3px solid var(--ok);background:rgba(52,211,153,.07);padding:14px 18px;
+  border-radius:0 12px 12px 0;margin:18px 0;font-size:.94rem;color:#c5ecdd}
+.win b{color:var(--ok)}
+
+/* ---------- BUTTONS ---------- */
+button{font-family:inherit;cursor:pointer;border:none;transition:.2s}
+.btn{background:linear-gradient(135deg,var(--v10),#60a5fa);color:#0b1020;font-weight:700;
+  padding:11px 22px;border-radius:11px;font-size:.9rem}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(34,211,238,.28)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--v10);box-shadow:none}
+.ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+
+/* toggle */
+.tg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:4px;gap:4px}
+.tg button{background:transparent;color:var(--dim);padding:8px 18px;border-radius:8px;font-weight:700;font-size:.85rem}
+.tg button.on{background:var(--card2);color:var(--txt)}
+.tg button.on.danger{background:rgba(251,113,133,.18);color:var(--bad)}
+.tg button.on.good{background:rgba(52,211,153,.18);color:var(--ok)}
+
+/* ---------- SVG STAGE ---------- */
+.stage{background:#080d1c;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+svg{display:block;width:100%;height:auto}
+.dev-label{font:600 12px 'Segoe UI',sans-serif;fill:var(--dim)}
+.dev-sub{font:500 10px 'Segoe UI',sans-serif;fill:var(--dim2)}
+.port{font:600 9px 'Segoe UI',sans-serif;fill:var(--dim2)}
+.link{stroke:#33406f;stroke-width:3;stroke-linecap:round}
+.link.hot{stroke:var(--v10);filter:drop-shadow(0 0 6px var(--v10))}
+
+/* narration */
+.narr{padding:14px 18px;background:var(--bg2);border-top:1px solid var(--line);min-height:76px;
+  display:flex;gap:13px;align-items:flex-start}
+.narr .step{background:var(--v10);color:#0b1020;font-weight:800;font-size:.72rem;padding:3px 9px;
+  border-radius:6px;flex-shrink:0;margin-top:2px}
+.narr p{margin:0;color:#c8d1ec;font-size:.92rem}
+.narr code{background:var(--card2);padding:1px 6px;border-radius:4px;color:var(--v10);font-size:.85em}
+
+/* ---------- FRAME BUILDER ---------- */
+.frame{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:24px 0;font-family:ui-monospace,monospace}
+.fb{padding:14px 10px;border-radius:9px;text-align:center;font-size:.7rem;font-weight:700;
+  border:1px solid var(--line);background:var(--card2);color:var(--dim);min-width:64px;transition:.45s}
+.fb .by{display:block;font-size:.6rem;color:var(--dim2);font-weight:500;margin-top:3px}
+.fb.tag{background:linear-gradient(135deg,rgba(34,211,238,.22),rgba(96,165,250,.22));
+  border-color:var(--v10);color:var(--v10);max-width:0;padding-left:0;padding-right:0;
+  opacity:0;overflow:hidden;min-width:0}
+.fb.tag.show{max-width:130px;opacity:1;padding:14px 10px;min-width:96px}
+
+/* ---------- PORT PLAYGROUND ---------- */
+.ports{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:9px;margin:18px 0}
+.pt{background:var(--card2);border:2px solid var(--line);border-radius:11px;padding:13px 6px;
+  text-align:center;cursor:pointer;transition:.22s;user-select:none}
+.pt:hover{transform:translateY(-3px)}
+.pt .pn{font-weight:800;font-size:.82rem}
+.pt .pv{font-size:.68rem;margin-top:3px;opacity:.85}
+.pt[data-v="1"]{border-color:var(--v1);color:var(--v1);background:rgba(167,139,250,.1)}
+.pt[data-v="10"]{border-color:var(--v10);color:var(--v10);background:rgba(34,211,238,.1)}
+.pt[data-v="20"]{border-color:var(--v20);color:var(--v20);background:rgba(251,191,36,.1)}
+.pt[data-v="T"]{border-color:#fff;color:#fff;background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(251,191,36,.18))}
+
+/* ---------- CODE ---------- */
+.code{background:#060a16;border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+  font-family:ui-monospace,'Cascadia Code',monospace;font-size:.83rem;overflow-x:auto;
+  color:#b9c4e8;line-height:1.75;margin:14px 0}
+.code .c{color:var(--dim2);font-style:italic}
+.code .k{color:var(--v10)}
+.code .n{color:var(--v20)}
+.code .p{color:#818cf8}
+
+/* ---------- FLIP CARDS ---------- */
+.flips{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-top:18px}
+.flip{height:172px;perspective:1100px;cursor:pointer}
+.fi{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,.2,.2,1);
+  transform-style:preserve-3d}
+.flip.f .fi{transform:rotateY(180deg)}
+.ff,.fbk{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:18px;
+  display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line)}
+.ff{background:linear-gradient(160deg,var(--card),var(--bg2));align-items:center;text-align:center}
+.ff .t{font-weight:800;font-size:1.02rem;margin-bottom:6px}
+.ff .h{font-size:.72rem;color:var(--dim2);text-transform:uppercase;letter-spacing:.12em}
+.fbk{background:linear-gradient(160deg,var(--card2),#1a2450);transform:rotateY(180deg);overflow:auto}
+.fbk p{font-size:.83rem;color:#c8d1ec;margin:0}
+
+/* ---------- QUIZ ---------- */
+.q{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);
+  border-radius:14px;padding:20px;margin-bottom:14px}
+.q .qt{font-weight:700;margin-bottom:14px;display:flex;gap:10px}
+.q .qt span{color:var(--v10);font-weight:800;flex-shrink:0}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);
+  color:var(--dim);padding:11px 15px;border-radius:10px;margin-bottom:8px;font-size:.9rem}
+.opt:hover:not(.done){border-color:var(--v10);color:var(--txt)}
+.opt.ok{border-color:var(--ok);background:rgba(52,211,153,.13);color:var(--ok)}
+.opt.no{border-color:var(--bad);background:rgba(251,113,133,.13);color:var(--bad)}
+.fbq{font-size:.86rem;margin-top:10px;padding:11px 14px;border-radius:9px;display:none}
+.fbq.show{display:block}
+.fbq.ok{background:rgba(52,211,153,.1);color:#a7e8cf}
+.fbq.no{background:rgba(251,113,133,.1);color:#f7c0c9}
+#score{text-align:center;font-size:1.05rem;font-weight:700;padding:20px;display:none}
+
+/* ---------- MISC ---------- */
+.legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;padding:12px;font-size:.78rem;color:var(--dim)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.88rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--dim2);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
+td{color:var(--dim)}
+td:first-child{color:var(--txt);font-weight:600}
+.reveal{opacity:0;transform:translateY(22px);transition:.7s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+footer{padding:50px 0 70px;text-align:center;color:var(--dim2);font-size:.85rem;border-top:1px solid var(--line)}
+.pill{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.75rem;font-weight:700}
+.p10{background:rgba(34,211,238,.16);color:var(--v10)}
+.p20{background:rgba(251,191,36,.16);color:var(--v20)}
+.p1{background:rgba(167,139,250,.16);color:var(--v1)}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a href="#s0" class="on">El problema</a>
+  <a href="#s1">Qué es una VLAN</a>
+  <a href="#s2">La etiqueta</a>
+  <a href="#s3">Acceso vs Trunk</a>
+  <a href="#s4">El router</a>
+  <a href="#s5">Simulador</a>
+  <a href="#s6">Los comandos</a>
+  <a href="#s7">Glosario</a>
+  <a href="#s8">Quiz</a>
+</div></nav>
+
+<header class="wrap">
+  <div class="kicker">Laboratorio · Carpeta trunk</div>
+  <h1>Tienes <span class="g">un switch</span><br>y <span class="g">dos departamentos</span></h1>
+  <p class="sub">Ingeniería y Ventas comparten el mismo equipo, pero no deben verse entre sí… salvo cuando sí.
+  Esta página te explica, desde cero, qué problema resuelve la práctica y por qué cada comando está ahí.</p>
+</header>
+
+<!-- ============ 0. EL PROBLEMA ============ -->
+<section id="s0"><div class="wrap reveal">
+  <h2><span class="num">0</span>¿Para qué sirve todo esto?</h2>
+  <p class="lead">Antes de tocar un solo comando, entiende el problema real que estás resolviendo.</p>
+
+  <p>Imagina una empresa pequeña con <strong>un solo switch</strong> de 24 puertos. En él conectas los
+  computadores de <strong>Ingeniería</strong> y los de <strong>Ventas</strong>. Todo funciona… y ahí está el
+  problema: <em>todo</em> funciona. Cualquier PC de Ventas puede acceder a los archivos de Ingeniería, y cada vez
+  que un equipo grita "¿quién tiene esta dirección?" (un <strong>broadcast</strong>), el switch se lo repite a
+  <strong>todos</strong>, incluso a quienes no les interesa.</p>
+
+  <p>La solución obvia sería comprar dos switches. La solución <strong>inteligente</strong> es partir el switch
+  que ya tienes en varias redes lógicas: eso es una <strong>VLAN</strong>.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Pruébalo: haz clic en un PC para que envíe un broadcast</h3>
+    <p style="font-size:.9rem">Cambia el interruptor y observa a quién le llega el mensaje.</p>
+    <div class="ctrls">
+      <div class="tg">
+        <button id="bOff" class="on danger" onclick="setVlanMode(false)">Sin VLANs</button>
+        <button id="bOn" onclick="setVlanMode(true)">Con VLANs</button>
+      </div>
+      <span id="modeTxt" style="font-size:.85rem;color:var(--dim)">Un solo dominio de broadcast: le llega a todos.</span>
+    </div>
+
+    <div class="stage">
+      <svg viewBox="0 0 760 300" id="bcSvg">
+        <line class="link" x1="380" y1="150" x2="120" y2="70"/>
+        <line class="link" x1="380" y1="150" x2="120" y2="235"/>
+        <line class="link" x1="380" y1="150" x2="640" y2="70"/>
+        <line class="link" x1="380" y1="150" x2="640" y2="235"/>
+        <!-- switch -->
+        <rect x="325" y="128" width="110" height="44" rx="9" fill="#1b2549" stroke="#3d4d85" stroke-width="2"/>
+        <text x="380" y="155" text-anchor="middle" class="dev-label" style="fill:#cfd7f0">SWITCH</text>
+        <!-- pcs -->
+        <g class="bcpc" data-i="0"><rect x="60" y="45" width="118" height="50" rx="10" fill="#151d3b" stroke="#22d3ee" stroke-width="2" style="cursor:pointer"/>
+          <text x="119" y="68" text-anchor="middle" class="dev-label" style="fill:#22d3ee">PC-A</text>
+          <text x="119" y="83" text-anchor="middle" class="dev-sub">Ingeniería</text></g>
+        <g class="bcpc" data-i="1"><rect x="60" y="210" width="118" height="50" rx="10" fill="#151d3b" stroke="#22d3ee" stroke-width="2" style="cursor:pointer"/>
+          <text x="119" y="233" text-anchor="middle" class="dev-label" style="fill:#22d3ee">PC-B</text>
+          <text x="119" y="248" text-anchor="middle" class="dev-sub">Ingeniería</text></g>
+        <g class="bcpc" data-i="2"><rect x="582" y="45" width="118" height="50" rx="10" fill="#151d3b" stroke="#fbbf24" stroke-width="2" style="cursor:pointer"/>
+          <text x="641" y="68" text-anchor="middle" class="dev-label" style="fill:#fbbf24">PC-C</text>
+          <text x="641" y="83" text-anchor="middle" class="dev-sub">Ventas</text></g>
+        <g class="bcpc" data-i="3"><rect x="582" y="210" width="118" height="50" rx="10" fill="#151d3b" stroke="#fbbf24" stroke-width="2" style="cursor:pointer"/>
+          <text x="641" y="233" text-anchor="middle" class="dev-label" style="fill:#fbbf24">PC-D</text>
+          <text x="641" y="248" text-anchor="middle" class="dev-sub">Ventas</text></g>
+        <g id="bcDots"></g>
+      </svg>
+      <div class="legend">
+        <span><i style="background:var(--v10)"></i>Ingeniería (VLAN 10)</span>
+        <span><i style="background:var(--v20)"></i>Ventas (VLAN 20)</span>
+        <span style="color:var(--dim2)">↑ clic en cualquier PC</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note"><b>La idea clave.</b> Un switch normal es <em>un</em> dominio de broadcast: el ruido de
+  cualquiera molesta a todos. Al crear VLANs, conviertes ese switch en <em>varios</em> switches independientes,
+  cada uno con su propio dominio de broadcast, sin gastar un peso más en hardware.</div>
+</div></section>
+
+<!-- ============ 1. QUÉ ES UNA VLAN ============ -->
+<section id="s1"><div class="wrap reveal">
+  <h2><span class="num">1</span>Qué es una VLAN, sin rodeos</h2>
+  <p class="lead">Una <strong>VLAN</strong> (Virtual LAN, red de área local virtual) es una etiqueta que le pones
+  a un puerto del switch para decidir a qué red pertenece.</p>
+
+  <p>Nada más. No es un cable, no es un aparato, no es software que instales. Es un <strong>número</strong>
+  (del 1 al 4094) asociado a un puerto. Dos puertos con el mismo número se ven entre sí; dos puertos con números
+  distintos <strong>no se ven</strong>, aunque estén en el mismo switch y a 2 cm de distancia.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Asigna tú las VLANs</h3>
+    <p style="font-size:.9rem">Haz clic en un puerto para cambiar su VLAN y mira qué puertos quedan comunicados.</p>
+    <div class="ports" id="portGrid"></div>
+    <div id="portMsg" style="font-size:.9rem;padding:13px 16px;background:var(--bg);border-radius:10px;
+      border:1px solid var(--line);color:var(--dim)"></div>
+  </div>
+
+  <h3>Lo que ganas</h3>
+  <ul>
+    <li><strong>Seguridad</strong> — Ventas no llega a los equipos de Ingeniería por defecto. Para que se hablen
+    hace falta pasar por un router, y ahí puedes filtrar.</li>
+    <li><strong>Menos ruido</strong> — cada VLAN es su propio dominio de broadcast.</li>
+    <li><strong>Flexibilidad</strong> — mover a alguien de departamento es cambiar un número, no tender cable.</li>
+    <li><strong>Independencia física</strong> — dos personas en pisos distintos pueden estar en la misma VLAN.</li>
+    <li><strong>Ahorro</strong> — un switch hace el trabajo de varios.</li>
+  </ul>
+
+  <div class="note"><b>Y lo que pierdes.</b> Al aislarlas, las VLANs dejan de hablarse. Si Ventas necesita
+  llegar al servidor de Ingeniería, hay que reconectarlas <em>a propósito</em> con un router. Eso es la segunda
+  mitad de la práctica, y el motivo de que haya un router en la topología.</div>
+</div></section>
+
+<!-- ============ 2. LA ETIQUETA ============ -->
+<section id="s2"><div class="wrap reveal">
+  <h2><span class="num">2</span>El problema del cable único: la etiqueta 802.1Q</h2>
+  <p class="lead">Si un cable transporta varias VLANs a la vez, ¿cómo sabe el equipo del otro lado a cuál
+  pertenece cada mensaje?</p>
+
+  <p>Piensa en el correo postal. Si metes cartas de dos departamentos en la misma saca, al llegar nadie sabe
+  cuál es de quién… <strong>a menos que le pongas una etiqueta a cada sobre</strong>. Eso es exactamente lo que
+  hace el estándar <strong>IEEE 802.1Q</strong> (lo verás escrito <code>dot1Q</code> en los comandos).</p>
+
+  <p>Antes de mandar una trama por un cable compartido, el switch le <strong>inserta 4 bytes</strong> en la
+  cabecera. Dentro de esos bytes van 12 bits con el número de VLAN — por eso el máximo son 4094 VLANs.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Mira la etiqueta aparecer</h3>
+    <div class="ctrls">
+      <div class="tg">
+        <button id="tOff" class="on" onclick="setTag(null)">Puerto de acceso<br><small style="font-weight:500;opacity:.7">sin etiqueta</small></button>
+        <button id="t10" onclick="setTag(10)">Trunk · VLAN 10</button>
+        <button id="t20" onclick="setTag(20)">Trunk · VLAN 20</button>
+      </div>
+    </div>
+    <div class="frame">
+      <div class="fb">MAC<br>destino<span class="by">6 bytes</span></div>
+      <div class="fb">MAC<br>origen<span class="by">6 bytes</span></div>
+      <div class="fb tag" id="tagBox">TAG 802.1Q<br><span id="tagVid">VLAN 10</span><span class="by">4 bytes</span></div>
+      <div class="fb">Tipo<span class="by">2 bytes</span></div>
+      <div class="fb" style="min-width:130px">DATOS<span class="by">46–1500 bytes</span></div>
+      <div class="fb">FCS<span class="by">4 bytes</span></div>
+    </div>
+    <div id="tagMsg" style="font-size:.9rem;text-align:center;color:var(--dim);padding:10px"></div>
+  </div>
+
+  <div class="note"><b>La VLAN nativa.</b> Hay una excepción: la <strong>VLAN nativa</strong> (por defecto la 1)
+  viaja <em>sin etiquetar</em> por el trunk, por compatibilidad con equipos viejos que no entienden 802.1Q. Por
+  eso en el router escribes <code>encapsulation dot1Q 1 native</code> — esa palabra <code>native</code> es la que
+  dice "esta va sin sobre".</div>
+</div></section>
+
+<!-- ============ 3. ACCESO VS TRUNK ============ -->
+<section id="s3"><div class="wrap reveal">
+  <h2><span class="num">3</span>Los dos tipos de puerto</h2>
+  <p class="lead">Todo puerto de switch es una de dos cosas. Saber cuál es cuál resuelve el 80 % de los
+  problemas de este laboratorio.</p>
+
+  <div class="grid2">
+    <div class="card" style="border-color:rgba(34,211,238,.4)">
+      <h3 style="margin-top:0;color:var(--v10)">Puerto de acceso <span style="font-size:.7rem;color:var(--dim2)">(access port)</span></h3>
+      <p style="font-size:.92rem">Pertenece a <strong>una sola</strong> VLAN. El tráfico entra y sale
+      <strong>sin etiqueta</strong>: el PC conectado no sabe ni le importa que existan las VLANs.</p>
+      <p style="font-size:.92rem;margin-bottom:8px"><strong>Para qué:</strong> PCs, impresoras, servidores,
+      cámaras. Todo lo que sea un equipo final.</p>
+      <div class="code" style="margin-bottom:0"><span class="k">switchport mode</span> access
+<span class="k">switchport access vlan</span> <span class="n">10</span></div>
+      <p style="font-size:.85rem;margin:12px 0 0;color:var(--dim2)">En la práctica: <code>fa0/2</code> y <code>fa0/4</code></p>
+    </div>
+
+    <div class="card" style="border-color:rgba(251,191,36,.4)">
+      <h3 style="margin-top:0;color:var(--v20)">Puerto troncal <span style="font-size:.7rem;color:var(--dim2)">(trunk port)</span></h3>
+      <p style="font-size:.92rem">Transporta <strong>todas</strong> las VLANs por un único cable, etiquetando
+      cada trama con su VLAN ID. El equipo del otro lado <strong>debe</strong> entender 802.1Q.</p>
+      <p style="font-size:.92rem;margin-bottom:8px"><strong>Para qué:</strong> switch↔switch y switch↔router.
+      Nunca hacia un PC.</p>
+      <div class="code" style="margin-bottom:0"><span class="k">switchport mode</span> trunk</div>
+      <p style="font-size:.85rem;margin:12px 0 0;color:var(--dim2)">En la práctica: <code>fa0/1</code>, hacia el router</p>
+    </div>
+  </div>
+
+  <div class="win"><b>Por qué existe el trunk.</b> Sin él, conectar un switch con 20 VLANs a otro switch exigiría
+  <strong>20 cables</strong>, uno por VLAN. Con trunk: <strong>un cable</strong>. Ese es todo el invento.</div>
+</div></section>
+
+<!-- ============ 4. ROUTER ON A STICK ============ -->
+<section id="s4"><div class="wrap reveal">
+  <h2><span class="num">4</span>Y ahora, ¿cómo se hablan las VLANs?</h2>
+  <p class="lead">Las aislaste a propósito. Para reconectarlas necesitas un equipo que trabaje en capa 3: un
+  <strong>router</strong>.</p>
+
+  <p>Un switch mueve tramas por dirección MAC dentro de <em>una misma red</em>. En cuanto hay que saltar de la
+  red <code>10.0.0.0</code> a la <code>20.0.0.0</code>, hace falta alguien que entienda direcciones IP y decida
+  la ruta. Eso es un router. A esto se le llama <strong>enrutamiento inter-VLAN</strong>.</p>
+
+  <h3>El truco: subinterfaces</h3>
+  <p>El router 2620XM de la práctica tiene <strong>una sola</strong> tarjeta de red física
+  (<code>fa0/0</code>). Necesitas 3 gateways (uno por VLAN) y solo tienes 1 puerto. La solución es partir esa
+  interfaz física en <strong>subinterfaces lógicas</strong>: <code>fa0/0.1</code>, <code>fa0/0.2</code>,
+  <code>fa0/0.3</code>. Cada una se comporta como una tarjeta de red independiente, con su propia IP y su propia
+  VLAN.</p>
+
+  <p>A este diseño —un router colgando de un trunk, atendiendo todas las VLANs por un solo cable— se le llama
+  <strong>router-on-a-stick</strong> ("router en un palito"). El "palito" es el trunk.</p>
+
+  <div class="card">
+    <div class="grid2" style="align-items:start">
+      <div>
+        <h3 style="margin-top:0">La correspondencia que debes ver</h3>
+        <table style="margin:0">
+          <tr><th>Subinterfaz</th><th>VLAN</th><th>IP = gateway de…</th></tr>
+          <tr><td>fa0/0.1</td><td><span class="pill p1">1 nativa</span></td><td>1.0.0.1 → el switch</td></tr>
+          <tr><td>fa0/0.2</td><td><span class="pill p10">10</span></td><td>10.0.0.1 → PC0</td></tr>
+          <tr><td>fa0/0.3</td><td><span class="pill p20">20</span></td><td>20.0.0.1 → PC1</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3 style="margin-top:0">El detalle que confunde a todos</h3>
+        <p style="font-size:.92rem">El número después del punto (<code>.1</code>, <code>.2</code>, <code>.3</code>)
+        es <strong>solo una etiqueta local</strong>, te lo inventas tú. <span style="color:var(--txt)">Lo que
+        realmente asigna la VLAN es el comando <code>encapsulation dot1Q &lt;n&gt;</code></span>.</p>
+        <p style="font-size:.92rem;margin:0">Por eso <code>fa0/0.2</code> lleva la VLAN <strong>10</strong> y no
+        la 2. Muchos los hacen coincidir (<code>fa0/0.10</code> para VLAN 10) solo para no marearse.</p>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ 5. SIMULADOR ============ -->
+<section id="s5"><div class="wrap reveal">
+  <h2><span class="num">5</span>El viaje completo de un ping</h2>
+  <p class="lead">Aquí se junta todo. Sigue paso a paso qué le pasa a un paquete que sale de PC0 (Ingeniería) y
+  llega a PC1 (Ventas).</p>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="stage" style="border:none;border-radius:0">
+      <svg viewBox="0 0 800 470" id="simSvg">
+        <!-- links -->
+        <line id="lnkRS" class="link" x1="400" y1="118" x2="400" y2="212"/>
+        <line id="lnkS0" class="link" x1="352" y1="248" x2="196" y2="366"/>
+        <line id="lnkS1" class="link" x1="448" y1="248" x2="604" y2="366"/>
+
+        <text x="418" y="172" class="port" style="fill:#8a95bd">TRUNK · fa0/1 ↔ fa0/0</text>
+        <text x="248" y="300" class="port">fa0/2</text>
+        <text x="516" y="300" class="port">fa0/4</text>
+
+        <!-- router -->
+        <rect x="315" y="52" width="170" height="66" rx="12" fill="#151d3b" stroke="#a78bfa" stroke-width="2"/>
+        <circle cx="345" cy="85" r="12" fill="none" stroke="#a78bfa" stroke-width="2"/>
+        <text x="410" y="80" text-anchor="middle" class="dev-label" style="fill:#c4b5fd;font-size:13px">Router0 · 2620XM</text>
+        <text x="410" y="97" text-anchor="middle" class="dev-sub">fa0/0.1 · .2 · .3</text>
+
+        <!-- switch -->
+        <rect x="310" y="212" width="180" height="60" rx="12" fill="#151d3b" stroke="#60a5fa" stroke-width="2"/>
+        <text x="400" y="238" text-anchor="middle" class="dev-label" style="fill:#93c5fd;font-size:13px">sw1 · 2950T-24</text>
+        <text x="400" y="255" text-anchor="middle" class="dev-sub">1.0.0.2</text>
+
+        <!-- pc0 -->
+        <rect x="60" y="366" width="150" height="66" rx="12" fill="#151d3b" stroke="#22d3ee" stroke-width="2"/>
+        <text x="135" y="392" text-anchor="middle" class="dev-label" style="fill:#22d3ee;font-size:13px">PC0</text>
+        <text x="135" y="409" text-anchor="middle" class="dev-sub">10.0.0.2 · VLAN 10</text>
+        <text x="135" y="423" text-anchor="middle" class="dev-sub" style="fill:#5a6690">gw 10.0.0.1</text>
+
+        <!-- pc1 -->
+        <rect x="590" y="366" width="150" height="66" rx="12" fill="#151d3b" stroke="#fbbf24" stroke-width="2"/>
+        <text x="665" y="392" text-anchor="middle" class="dev-label" style="fill:#fbbf24;font-size:13px">PC1</text>
+        <text x="665" y="409" text-anchor="middle" class="dev-sub">20.0.0.2 · VLAN 20</text>
+        <text x="665" y="423" text-anchor="middle" class="dev-sub" style="fill:#5a6690">gw 20.0.0.1</text>
+
+        <!-- packet -->
+        <g id="pkt" style="opacity:0">
+          <rect x="-34" y="-15" width="68" height="30" rx="8" fill="#22d3ee"/>
+          <text id="pktTxt" x="0" y="5" text-anchor="middle" style="font:800 11px 'Segoe UI';fill:#08121f">DATA</text>
+        </g>
+      </svg>
+      <div class="narr">
+        <span class="step" id="simStep">0</span>
+        <p id="simTxt">Pulsa <b>Iniciar ping</b>. PC0 quiere alcanzar a PC1, pero están en redes distintas
+        (10.0.0.0 y 20.0.0.0), así que el paquete no puede ir directo.</p>
+      </div>
+    </div>
+    <div class="ctrls" style="padding:16px 20px;margin:0">
+      <button class="btn" id="simGo" onclick="simRun()">▶ Iniciar ping</button>
+      <button class="btn ghost" onclick="simReset()">Reiniciar</button>
+      <span style="font-size:.82rem;color:var(--dim2)">5 pasos · ~12 s</span>
+    </div>
+  </div>
+
+  <div class="win"><b>Lo importante.</b> Fíjate en que el paquete <strong>sube al router y vuelve a bajar por el
+  mismo cable</strong>. Eso es el router-on-a-stick. Y fíjate en que la etiqueta VLAN solo existe
+  <strong>dentro del trunk</strong>: los PCs nunca la ven.</div>
+</div></section>
+
+<!-- ============ 6. COMANDOS ============ -->
+<section id="s6"><div class="wrap reveal">
+  <h2><span class="num">6</span>Ahora los comandos tienen sentido</h2>
+  <p class="lead">Cada línea que escribiste responde a una de las ideas de arriba. Aquí está la traducción.</p>
+
+  <h3>En el switch</h3>
+  <table>
+    <tr><th>Comando</th><th>Qué está haciendo de verdad</th></tr>
+    <tr><td><code>vlan 20</code><br><code>name VENTAS</code></td><td>Crear la red lógica nº 20 y ponerle nombre para no perderte.</td></tr>
+    <tr><td><code>switchport mode access</code></td><td>"Este puerto es para un equipo final, pertenece a una sola VLAN."</td></tr>
+    <tr><td><code>switchport access vlan 20</code></td><td>"…y esa VLAN es la 20." Lo que entre por aquí se marca como Ventas.</td></tr>
+    <tr><td><code>switchport mode trunk</code></td><td>"Este puerto lleva todas las VLANs etiquetadas." Es el cable al router.</td></tr>
+    <tr><td><code>interface vlan 1</code><br><code>ip address 1.0.0.2 …</code></td><td>El switch es capa 2 y no tiene IP propia. Esta IP virtual existe solo para administrarlo por telnet.</td></tr>
+    <tr><td><code>ip default-gateway 1.0.0.1</code></td><td>Sin esto el switch recibe tu telnet pero <strong>no sabe responderte</strong> si vienes de otra red.</td></tr>
+  </table>
+
+  <h3>En el router</h3>
+  <table>
+    <tr><th>Comando</th><th>Qué está haciendo de verdad</th></tr>
+    <tr><td><code>interface fa0/0</code><br><code>no shutdown</code></td><td>Encender la tarjeta física. Los routers Cisco vienen con todo apagado de fábrica: si lo olvidas, nada funciona.</td></tr>
+    <tr><td><code>interface fa0/0.2</code></td><td>Crear una subinterfaz lógica, una "tarjeta de red imaginaria".</td></tr>
+    <tr><td><code>encapsulation dot1Q 10</code></td><td><strong>Aquí</strong> se decide la VLAN: "esta subinterfaz atiende las tramas etiquetadas como 10".</td></tr>
+    <tr><td><code>ip address 10.0.0.1 …</code></td><td>Esta IP es el <strong>default gateway</strong> que pones en PC0.</td></tr>
+    <tr><td><code>… dot1Q 1 native</code></td><td>La VLAN 1 viaja sin etiqueta. Debe coincidir con el otro extremo del trunk.</td></tr>
+  </table>
+
+  <div class="note"><b>El error nº 1 de esta práctica.</b> Dejar los PCs sin <strong>default gateway</strong>.
+  Sin él, PC0 sabe llegar a cualquiera de la red 10.0.0.0, pero no tiene ni idea de a quién entregarle un paquete
+  destinado a 20.0.0.2 — así que lo descarta y el ping falla siempre, por muy bien configurados que estén switch
+  y router.</div>
+</div></section>
+
+<!-- ============ 7. GLOSARIO ============ -->
+<section id="s7"><div class="wrap reveal">
+  <h2><span class="num">7</span>Glosario · toca para voltear</h2>
+  <div class="flips" id="flips"></div>
+</div></section>
+
+<!-- ============ 8. QUIZ ============ -->
+<section id="s8"><div class="wrap reveal">
+  <h2><span class="num">8</span>¿Lo entendiste?</h2>
+  <p class="lead">Seis preguntas. Cada respuesta te explica el porqué.</p>
+  <div id="quiz"></div>
+  <div id="score"></div>
+  <div class="ctrls" style="justify-content:center">
+    <button class="btn ghost" onclick="quizReset()">Reintentar</button>
+  </div>
+</div></section>
+
+<footer>
+  <p>Vault <strong>infra 2</strong> · carpeta <code>trunk</code> · complemento de
+  <em>Guía paso a paso - VLAN Trunking.md</em></p>
+</footer>
+
+<script>
+/* ============ REVEAL ON SCROLL ============ */
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(e=>io.observe(e));
+
+/* ============ NAV ACTIVE ============ */
+const navA=[...document.querySelectorAll('nav a')];
+const io2=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){navA.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));}
+}),{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('section').forEach(s=>io2.observe(s));
+
+/* ============ 0. BROADCAST DEMO ============ */
+let vlanMode=false;
+const PCP=[[119,70],[119,235],[641,70],[641,235]];
+const PCV=[10,10,20,20];
+const SW=[380,150];
+function setVlanMode(on){
+  vlanMode=on;
+  bOff.classList.toggle('on',!on); bOff.classList.toggle('danger',!on);
+  bOn.classList.toggle('on',on);  bOn.classList.toggle('good',on);
+  modeTxt.textContent=on
+    ?'Dos dominios de broadcast: el mensaje solo llega a su propia VLAN.'
+    :'Un solo dominio de broadcast: le llega a todos.';
+}
+document.querySelectorAll('.bcpc').forEach(g=>g.addEventListener('click',()=>bcSend(+g.dataset.i)));
+function bcSend(src){
+  const box=document.getElementById('bcDots');
+  const mk=(x,y,c)=>{const e=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    e.setAttribute('cx',x);e.setAttribute('cy',y);e.setAttribute('r',7);e.setAttribute('fill',c);
+    e.style.filter='drop-shadow(0 0 8px '+c+')';box.appendChild(e);return e;};
+  const col=PCV[src]===10?'#22d3ee':'#fbbf24';
+  const up=mk(PCP[src][0],PCP[src][1],col);
+  anim(up,PCP[src],SW,520,()=>{
+    up.remove();
+    PCP.forEach((p,i)=>{
+      if(i===src)return;
+      const allow=!vlanMode||PCV[i]===PCV[src];
+      const c=allow?col:'#3d4763';
+      const d=mk(SW[0],SW[1],c);
+      if(!allow)d.setAttribute('opacity','.35');
+      anim(d,SW,p,560,()=>{
+        if(allow){flash(i,col);}
+        d.remove();
+      });
+    });
+  });
+}
+function anim(el,from,to,ms,done){
+  const t0=performance.now();
+  (function f(t){
+    const k=Math.min(1,(t-t0)/ms), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    el.setAttribute('cx',from[0]+(to[0]-from[0])*e);
+    el.setAttribute('cy',from[1]+(to[1]-from[1])*e);
+    k<1?requestAnimationFrame(f):done&&done();
+  })(t0);
+}
+function flash(i,c){
+  const r=document.querySelectorAll('.bcpc')[i].querySelector('rect');
+  r.style.transition='none'; r.setAttribute('fill',c==='#22d3ee'?'#0e3d4a':'#4a3a0e');
+  setTimeout(()=>{r.style.transition='fill .6s';r.setAttribute('fill','#151d3b');},130);
+}
+
+/* ============ 1. PORT PLAYGROUND ============ */
+const CYC=[1,10,20,'T'];
+const NAMES={1:'VLAN 1',10:'VLAN 10',20:'VLAN 20','T':'TRUNK'};
+let ports=[10,10,20,20,1,'T'];
+function drawPorts(){
+  portGrid.innerHTML=ports.map((v,i)=>
+    `<div class="pt" data-v="${v}" onclick="cyc(${i})">
+      <div class="pn">fa0/${i+1}</div><div class="pv">${NAMES[v]}</div></div>`).join('');
+  const g={};ports.forEach((v,i)=>{if(v!=='T'){(g[v]=g[v]||[]).push('fa0/'+(i+1));}});
+  const grp=Object.entries(g).filter(([,a])=>a.length>1).map(([v,a])=>`<b style="color:var(--txt)">${a.join(' ↔ ')}</b> se ven (VLAN ${v})`);
+  const solo=Object.entries(g).filter(([,a])=>a.length===1).map(([v,a])=>`${a[0]} está solo en la VLAN ${v}`);
+  const tr=ports.filter(v=>v==='T').length;
+  portMsg.innerHTML=(grp.concat(solo).join(' · ')||'—')+
+    (tr?`<br><span style="color:var(--dim2)">${tr} puerto(s) en trunk: llevan todas las VLANs hacia otro switch o router.</span>`:'');
+}
+function cyc(i){ports[i]=CYC[(CYC.indexOf(ports[i])+1)%4];drawPorts();}
+drawPorts();
+
+/* ============ 2. TAG ============ */
+function setTag(v){
+  [tOff,t10,t20].forEach(b=>b.classList.remove('on'));
+  (v===null?tOff:v===10?t10:t20).classList.add('on');
+  if(v===null){
+    tagBox.classList.remove('show');
+    tagMsg.innerHTML='Trama <b style="color:var(--txt)">sin etiquetar</b> — es lo que ve el PC. No sabe que las VLANs existen.';
+  }else{
+    tagVid.textContent='VLAN '+v;
+    tagBox.style.borderColor=v===10?'#22d3ee':'#fbbf24';
+    tagBox.style.color=v===10?'#22d3ee':'#fbbf24';
+    tagBox.classList.add('show');
+    tagMsg.innerHTML=`El switch insertó <b style="color:var(--txt)">4 bytes</b> entre la MAC origen y el tipo. Ahora la trama viaja marcada como <b style="color:${v===10?'#22d3ee':'#fbbf24'}">VLAN ${v}</b>.`;
+  }
+}
+setTag(null);
+
+/* ============ 5. SIMULADOR ============ */
+const P={pc0:[135,399],sw:[400,242],rt:[400,146],pc1:[665,399]};
+const STEPS=[
+ {from:'pc0',to:'sw',col:'#22d3ee',lbl:'DATA',link:'lnkS0',
+  txt:'PC0 quiere hablar con 20.0.0.2. Ve que <b>no es de su red</b> (él es 10.0.0.2/8), así que se lo entrega a su <b>default gateway</b> 10.0.0.1. La trama sale <b>sin etiqueta</b> por fa0/2.'},
+ {from:'sw',to:'rt',col:'#22d3ee',lbl:'TAG 10',link:'lnkRS',
+  txt:'El switch sabe que fa0/2 es de la <b>VLAN 10</b>. Como debe sacar la trama por el <b>trunk</b> fa0/1, le <b>inserta la etiqueta 802.1Q con VLAN 10</b> y la envía al router.'},
+ {from:'rt',to:'rt',col:'#a78bfa',lbl:'RUTEO',link:null,
+  txt:'El router la recibe en <code>fa0/0.2</code> (la subinterfaz configurada con <code>dot1Q 10</code>). Mira la IP destino <b>20.0.0.2</b>, consulta su tabla de rutas y ve que esa red cuelga de <code>fa0/0.3</code>. <b>Aquí ocurre el enrutamiento inter-VLAN.</b>'},
+ {from:'rt',to:'sw',col:'#fbbf24',lbl:'TAG 20',link:'lnkRS',
+  txt:'El router reenvía la trama por <code>fa0/0.3</code>, esta vez etiquetada como <b>VLAN 20</b>. Baja por el mismo cable físico por el que subió — eso es <b>router-on-a-stick</b>.'},
+ {from:'sw',to:'pc1',col:'#fbbf24',lbl:'DATA',link:'lnkS1',
+  txt:'El switch ve la etiqueta <b>20</b>, busca sus puertos de esa VLAN y encuentra fa0/4. <b>Quita la etiqueta</b> y entrega la trama limpia a PC1. ✅ <b>Ping exitoso.</b>'}
+];
+let busy=false;
+function simReset(){
+  busy=false; simGo.disabled=false; simGo.textContent='▶ Iniciar ping';
+  pkt.style.opacity=0; simStep.textContent='0';
+  simTxt.innerHTML='Pulsa <b>Iniciar ping</b>. PC0 quiere alcanzar a PC1, pero están en redes distintas (10.0.0.0 y 20.0.0.0), así que el paquete no puede ir directo.';
+  ['lnkRS','lnkS0','lnkS1'].forEach(i=>document.getElementById(i).classList.remove('hot'));
+}
+function simRun(){
+  if(busy)return; busy=true; simGo.disabled=true; simGo.textContent='Simulando…';
+  let i=0;
+  (function next(){
+    if(i>=STEPS.length){busy=false;simGo.disabled=false;simGo.textContent='▶ Repetir';
+      ['lnkRS','lnkS0','lnkS1'].forEach(x=>document.getElementById(x).classList.remove('hot'));return;}
+    const s=STEPS[i];
+    simStep.textContent=i+1; simStep.style.background=s.col;
+    simTxt.innerHTML=s.txt;
+    ['lnkRS','lnkS0','lnkS1'].forEach(x=>document.getElementById(x).classList.remove('hot'));
+    if(s.link){const L=document.getElementById(s.link);L.classList.add('hot');L.style.stroke=s.col;}
+    pkt.querySelector('rect').setAttribute('fill',s.col);
+    pktTxt.textContent=s.lbl;
+    pkt.style.opacity=1;
+    const a=P[s.from],b=P[s.to];
+    if(s.from===s.to){
+      pkt.setAttribute('transform',`translate(${a[0]},${a[1]})`);
+      pkt.style.transition='none';
+      let k=0;const blink=setInterval(()=>{pkt.style.opacity=(++k%2)?.35:1;},220);
+      setTimeout(()=>{clearInterval(blink);pkt.style.opacity=1;i++;next();},2100);
+      return;
+    }
+    pkt.style.transition='none';
+    pkt.setAttribute('transform',`translate(${a[0]},${a[1]})`);
+    requestAnimationFrame(()=>{
+      pkt.style.transition='transform 1.9s cubic-bezier(.45,.05,.55,.95)';
+      pkt.setAttribute('transform',`translate(${b[0]},${b[1]})`);
+    });
+    setTimeout(()=>{i++;next();},2400);
+  })();
+}
+
+/* ============ 7. FLIP CARDS ============ */
+const GLOS=[
+ ['VLAN','Virtual LAN','Red lógica dentro de un switch físico. Es un número (1–4094) asignado a un puerto. Mismo número = se ven; distinto número = aislados.'],
+ ['Trunk','Enlace troncal','Un solo cable que transporta varias VLANs a la vez, etiquetando cada trama. Va entre switch↔switch o switch↔router, nunca a un PC.'],
+ ['802.1Q','dot1Q','El estándar que define la etiqueta: 4 bytes insertados en la cabecera Ethernet, con 12 bits para el VLAN ID.'],
+ ['Encapsulación','Encapsulation','Envolver un paquete dentro de otro protocolo para transportarlo. Aquí: envolver la trama con la etiqueta de VLAN.'],
+ ['VLAN nativa','Native VLAN','La única VLAN que viaja SIN etiqueta por el trunk (por defecto la 1). Debe coincidir en ambos extremos.'],
+ ['Puerto de acceso','Access port','Puerto que pertenece a una sola VLAN y no etiqueta. Es donde conectas PCs e impresoras.'],
+ ['Subinterfaz','Subinterface','División lógica de una interfaz física (fa0/0.1, .2, .3). Cada una tiene su IP y su VLAN, como si fueran tarjetas de red separadas.'],
+ ['Router-on-a-stick','Router en un palito','Diseño donde un router enruta entre VLANs usando una sola interfaz física conectada por un trunk. Es la topología de esta práctica.'],
+ ['Dominio de broadcast','Broadcast domain','Conjunto de equipos a los que llega un mensaje "para todos". Cada VLAN es su propio dominio.'],
+ ['Default gateway','Puerta de enlace','La IP a la que un equipo entrega todo lo que no es de su propia red. Sin ella, no hay comunicación entre VLANs.'],
+ ['Inter-VLAN routing','Enrutamiento entre VLANs','Reconectar a propósito, vía capa 3, las VLANs que separaste en capa 2.'],
+ ['VTP','VLAN Trunking Protocol','Protocolo Cisco que propaga automáticamente la configuración de VLANs entre switches, para no crearlas a mano en cada uno.']
+];
+flips.innerHTML=GLOS.map(([t,h,b])=>
+ `<div class="flip" onclick="this.classList.toggle('f')"><div class="fi">
+   <div class="ff"><div class="h">${h}</div><div class="t">${t}</div>
+     <div style="font-size:.72rem;color:var(--dim2);margin-top:8px">toca para ver →</div></div>
+   <div class="fbk"><p>${b}</p></div></div></div>`).join('');
+
+/* ============ 8. QUIZ ============ */
+const QZ=[
+ ['¿Por qué se crean VLANs en vez de comprar más switches?',
+  ['Porque los switches son difíciles de configurar','Porque permiten dividir un switch físico en varias redes lógicas aisladas, sin gastar en hardware','Porque aumentan la velocidad del cable','Porque son obligatorias en Cisco'],1,
+  'Una VLAN convierte un switch en varios switches lógicos: aislamiento, seguridad y menos broadcast, con el equipo que ya tienes.'],
+ ['¿Qué hace exactamente un puerto en modo trunk?',
+  ['Aumenta el ancho de banda del puerto','Conecta dos cables al mismo puerto','Transporta varias VLANs por un cable, etiquetando cada trama con su VLAN ID','Bloquea el tráfico de las otras VLANs'],2,
+  'El trunk es un cable compartido. Para no mezclar el tráfico, cada trama sale etiquetada con 802.1Q.'],
+ ['PC0 (VLAN 10) hace ping a PC1 (VLAN 20) y falla. Todo lo demás está bien. ¿Qué falta casi seguro?',
+  ['El default gateway en los PCs','Más cables','Reiniciar el switch','Cambiar la máscara de red'],0,
+  'Es el error nº 1 de la práctica. Sin gateway, el PC no sabe a quién entregar un paquete de otra red y lo descarta.'],
+ ['En <code>interface fa0/0.2</code> + <code>encapsulation dot1Q 10</code>, ¿qué asigna la VLAN?',
+  ['El .2 del nombre de la subinterfaz','El comando encapsulation dot1Q 10','La dirección IP','El orden en que se escriben'],1,
+  'El .2 es solo una etiqueta local que te inventas. La VLAN real la fija encapsulation dot1Q.'],
+ ['¿Por qué hace falta un router si el switch ya conecta a todos?',
+  ['Para dar más velocidad','Porque el switch trabaja en capa 2 y no sabe pasar de la red 10.0.0.0 a la 20.0.0.0','Para poder hacer telnet','Porque Packet Tracer lo exige'],1,
+  'El switch mueve tramas por MAC dentro de una red. Saltar entre redes IP distintas requiere capa 3: un router.'],
+ ['¿Qué tiene de especial la VLAN nativa?',
+  ['Es la más rápida','Solo la pueden usar los routers','Sus tramas viajan sin etiquetar por el trunk','No se puede configurar'],2,
+  'Por compatibilidad con equipos que no entienden 802.1Q. Por eso escribes dot1Q 1 native. Debe coincidir en ambos extremos.']
+];
+let done=0,hits=0;
+function drawQuiz(){
+  quiz.innerHTML=QZ.map((q,i)=>
+   `<div class="q"><div class="qt"><span>${i+1}.</span><div>${q[0]}</div></div>
+     ${q[1].map((o,j)=>`<button class="opt" id="o${i}_${j}" onclick="pick(${i},${j})">${o}</button>`).join('')}
+     <div class="fbq" id="f${i}"></div></div>`).join('');
+}
+function pick(i,j){
+  if(document.getElementById('o'+i+'_0').classList.contains('done'))return;
+  const ok=j===QZ[i][2];
+  QZ[i][1].forEach((_,k)=>{
+    const b=document.getElementById('o'+i+'_'+k); b.classList.add('done');
+    if(k===QZ[i][2])b.classList.add('ok'); else if(k===j)b.classList.add('no');
+  });
+  const f=document.getElementById('f'+i);
+  f.className='fbq show '+(ok?'ok':'no');
+  f.innerHTML=(ok?'✅ <b>Correcto.</b> ':'❌ <b>No exactamente.</b> ')+QZ[i][3];
+  done++; if(ok)hits++;
+  if(done===QZ.length){
+    const s=document.getElementById('score'); s.style.display='block';
+    const pct=Math.round(hits/QZ.length*100);
+    s.innerHTML=`<span style="font-size:1.9rem;color:${pct>=70?'var(--ok)':'var(--v20)'}">${hits}/${QZ.length}</span><br>
+      <span style="color:var(--dim);font-weight:500;font-size:.92rem">${
+        pct===100?'Impecable. Ya puedes explicárselo a alguien más.':
+        pct>=70?'Bien. Repasa las que fallaste y estás listo para el laboratorio.':
+        'Vuelve a la sección 0 y al simulador del paso 5 — con eso encaja todo.'}</span>`;
+    s.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+function quizReset(){done=0;hits=0;document.getElementById('score').style.display='none';drawQuiz();
+  document.getElementById('s8').scrollIntoView({behavior:'smooth'});}
+drawQuiz();
+</script>
+</body>
+</html>
