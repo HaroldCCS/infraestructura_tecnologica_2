@@ -365,45 +365,77 @@ interface fastEthernet 0/1
 
 ## 8. Parte 3 — routing entre VLAN
 
-Los comandos que pide escribir la guía:
+> **Todos los comandos de esta parte van en el ROUTER `R1`.** Los switches ya quedaron listos en la Parte 2; aquí solo se toca el router. Entra por `Router → pestaña CLI`.
 
-**Subinterfaz para la VLAN 1:**
+**0) Punto de partida (router recién encendido).** Si arranca con el diálogo de configuración inicial, respóndelo con `no` y sitúate en modo de configuración global:
 
 ```cisco
+! --- En R1 ---
+Would you like to enter the initial configuration dialog? [yes/no]: no
+
+enable
+configure terminal
+```
+
+> 💡 Si vienes de hacer la Parte 1 en este mismo router, ya tendrá `hostname R1` y el prompt se verá como `R1#`; en ese caso basta con `configure terminal`. Si el prompt se ve como `Router>`, escribe primero `enable`.
+
+**1) Subinterfaz para la VLAN 1 (administración de los switches) — en R1:**
+
+```cisco
+! --- En R1 ---
 interface gigabitEthernet 0/1.1
  encapsulation dot1Q 1 native
  ip address 192.168.1.1 255.255.255.0
+ exit
 ```
 
-**Subinterfaz para la VLAN 10:**
+**2) Subinterfaz para la VLAN 10 (gateway de PC-A) — en R1:**
 
 ```cisco
+! --- En R1 ---
 interface gigabitEthernet 0/1.10
  encapsulation dot1Q 10
  ip address 192.168.10.1 255.255.255.0
+ exit
 ```
 
-**Subinterfaz para la VLAN 20:**
+**3) Subinterfaz para la VLAN 20 (gateway de PC-B) — en R1:**
 
 ```cisco
+! --- En R1 ---
 interface gigabitEthernet 0/1.20
  encapsulation dot1Q 20
  ip address 192.168.20.1 255.255.255.0
+ exit
 ```
 
-**Habilitar la interfaz física:**
+**4) Habilitar la interfaz FÍSICA y guardar — en R1:**
 
 ```cisco
+! --- En R1 ---
 interface gigabitEthernet 0/1
  no shutdown
+ exit
+!
+end
+copy running-config startup-config
 ```
 
-**Verificar:**
+> 🔑 **El `no shutdown` va en `G0/1` (la interfaz física), no en las subinterfaces.** Recién encendido el router, `G0/1` está en `administratively down`; si no la levantas, las tres subinterfaces quedan caídas por bien configuradas que estén. Es el error número uno de esta práctica.
+>
+> 🔑 **¿Por qué `G0/1.1` y no da error?** El número después del punto es solo la etiqueta de la subinterfaz; lo que de verdad importa es que `encapsulation dot1Q 1 native` coincida con la VLAN nativa del troncal. La VLAN 1 viaja **sin etiqueta**, y la palabra `native` es lo que le dice al router que la espere así. Sin `native`, esta subinterfaz no se comunica con las SVI de administración de los switches. *(El Apéndice A del enunciado omite `native`; es una corrección necesaria.)*
+
+**5) Verificar — en R1:**
 
 ```cisco
+! --- En R1 ---
 show ip route
 show ip interface brief
 ```
+
+En `show ip interface brief`, las cuatro interfaces `G0/1`, `G0/1.1`, `G0/1.10` y `G0/1.20` deben aparecer en **up / up**. Si `G0/1` sale como `administratively down`, te faltó el `no shutdown` del paso 4.
+
+> ℹ️ **Primer ping.** Al probar la comunicación (§9), el primer intento suele salir `Request timed out` mientras se resuelve el ARP; repite el ping y ya deben responder los cuatro paquetes.
 
 📸 **Captura 4:** `show ip route` de R1 con las cuatro redes conectadas.
 
