@@ -114,8 +114,8 @@ tags: [redes, vlan, intervlan, router-on-a-stick, 802.1q, subinterfaces, packet-
 
 `Desktop → IP Configuration → Static`:
 
-| PC | IP | Máscara | Gateway |
-|---|---|---|---|
+| PC   | IP             | Máscara         | Gateway        |
+| ---- | -------------- | --------------- | -------------- |
 | PC-A | `192.168.10.3` | `255.255.255.0` | `192.168.10.1` |
 | PC-B | `192.168.20.3` | `255.255.255.0` | `192.168.20.1` |
 
