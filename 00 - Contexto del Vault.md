@@ -57,6 +57,7 @@ Motivo: a futuro habrá varias prácticas en carpetas distintas. Si los comandos
 |---|---|---|
 | `trunk/` | **P1:** VLANs y enrutamiento inter-VLAN (802.1Q) · **P2:** servidores web + consola | [[Guía paso a paso - VLAN Trunking]] · [explicador interactivo](trunk/Conceptos%20-%20VLAN%20Trunking.html) |
 | `security port/` | Port Security (control de acceso por MAC) + RIPv2 en topología multisede Bogotá–Cali–Cúcuta | [[Guía paso a paso - Port Security y RIPv2]] |
+| `corte 2/Challenge PPP w CHAP/` | **Challenge:** PPP con CHAP + Frame Relay/RIP + NAT + DHCP/DNS/HTTP | [[Guía paso a paso - PPP con CHAP]] · [[RAPIDO]] |
 
 <!-- Añadir una fila por cada práctica nueva. Solo el enlace: los detalles quedan en la carpeta. -->
 
